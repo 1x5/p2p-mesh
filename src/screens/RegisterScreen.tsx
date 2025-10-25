@@ -1,0 +1,193 @@
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  StatusBar,
+  TouchableOpacity,
+  Alert,
+} from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { Button } from '../components/Button';
+import { InputField } from '../components/InputField';
+import { Icon } from '../components/Icon';
+import { Colors, Fonts, FontSizes, Spacing, BorderRadius } from '../styles/constants';
+import { DataService } from '../services/DataService';
+import { RootStackParamList } from '../types';
+
+type RegisterScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Register'>;
+
+export const RegisterScreen: React.FC = () => {
+  const navigation = useNavigation<RegisterScreenNavigationProp>();
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const dataService = DataService.getInstance();
+
+  const handleRegister = async () => {
+    if (!fullName || !email || !password) {
+      Alert.alert('Ошибка', 'Пожалуйста, заполните все поля');
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert('Ошибка', 'Пароль должен содержать минимум 6 символов');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const user = await dataService.register(fullName, email, password);
+      if (user) {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Main' }],
+        });
+      } else {
+        Alert.alert('Ошибка', 'Произошла ошибка при регистрации');
+      }
+    } catch (error) {
+      Alert.alert('Ошибка', 'Произошла ошибка при регистрации');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLoginPress = () => {
+    navigation.navigate('Login');
+  };
+
+  const handleBackPress = () => {
+    navigation.goBack();
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor={Colors.secondary} />
+      
+      <View style={styles.header}>
+        <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
+          <Icon name="arrow-back" size={24} color={Colors.text} />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.content}>
+        <Text style={styles.title}>Создать аккаунт</Text>
+        
+        <View style={styles.form}>
+          <InputField
+            label="Полное имя"
+            value={fullName}
+            onChangeText={setFullName}
+            placeholder="Полное имя"
+            icon="person-outline"
+            style={styles.input}
+          />
+          
+          <InputField
+            label="Почта"
+            value={email}
+            onChangeText={setEmail}
+            placeholder="Почта"
+            icon="mail-outline"
+            style={styles.input}
+          />
+          
+          <InputField
+            label="Пароль"
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Пароль"
+            secureTextEntry
+            icon="lock-closed-outline"
+            style={styles.input}
+          />
+          
+          <Button
+            title="Зарегистрироваться"
+            onPress={handleRegister}
+            variant="primary"
+            disabled={isLoading}
+            style={styles.registerButton}
+          />
+        </View>
+        
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Уже есть акаунт? </Text>
+          <TouchableOpacity onPress={handleLoginPress}>
+            <Text style={styles.linkText}>Войти</Text>
+          </TouchableOpacity>
+        </View>
+        
+        <View style={styles.divider} />
+      </View>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.secondary,
+  },
+  header: {
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.lg,
+  },
+  backButton: {
+    width: 45,
+    height: 45,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: Spacing['4xl'],
+    paddingTop: Spacing['3xl'],
+  },
+  title: {
+    fontSize: FontSizes['3xl'],
+    fontFamily: Fonts.primary.semiBold,
+    fontWeight: '600',
+    color: Colors.text,
+    marginBottom: Spacing['4xl'],
+    letterSpacing: -1.52,
+  },
+  form: {
+    marginBottom: Spacing['4xl'],
+  },
+  input: {
+    marginBottom: Spacing.lg,
+  },
+  registerButton: {
+    marginTop: Spacing.lg,
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: Spacing.lg,
+  },
+  footerText: {
+    fontSize: FontSizes.sm,
+    fontFamily: Fonts.primary.medium,
+    color: Colors.gray[400],
+    letterSpacing: -0.28,
+  },
+  linkText: {
+    fontSize: FontSizes.sm,
+    fontFamily: Fonts.primary.medium,
+    color: Colors.gray[400],
+    letterSpacing: -0.28,
+    textDecorationLine: 'underline',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: Colors.gray[300],
+    marginHorizontal: -Spacing['4xl'],
+  },
+});

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>p2p mesh - Secure Messenger</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f7f8fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 18px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+        .logo {
+            width: 154px;
+            height: 184px;
+            background: #d9d9d9;
+            border-radius: 16px;
+            margin: 0 auto 20px;
+        }
+        h1 {
+            font-family: 'Urbanist', sans-serif;
+            font-weight: 700;
+            font-size: 40px;
+            color: #212121;
+            margin-bottom: 40px;
+        }
+        .button {
+            background: #141718;
+            color: white;
+            border: none;
+            border-radius: 95px;
+            padding: 18px 20px;
+            font-size: 18px;
+            font-weight: 700;
+            width: 100%;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .button:hover {
+            opacity: 0.8;
+        }
+        .button.secondary {
+            background: #e3e3e3;
+            color: #b1b1b1;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo"></div>
+        <h1>p2p mesh</h1>
+        
+        <button class="button" onclick="testLogin()">Войти</button>
+        <button class="button secondary" onclick="testRegister()">Зарегистрироваться</button>
+        
+        <div class="status" id="status">
+            Приложение запущено! 🚀<br>
+            Сервер: <span id="server-status">Проверка...</span>
+        </div>
+    </div>
+
+    <script>
+        // Проверяем статус сервера без CORS
+        document.getElementById('server-status').textContent = 'Проверка через веб-версию...';
+        
+        // Попробуем открыть веб-версию
+        setTimeout(() => {
+            const webUrl = 'http://localhost:8081/?platform=web';
+            document.getElementById('server-status').innerHTML = 
+                `Веб-версия: <a href="${webUrl}" target="_blank">Открыть приложение</a>`;
+        }, 1000);
+
+        function testLogin() {
+            alert('🔐 Тест входа:\n\nEmail: test@example.com\nПароль: password\n\nВ реальном приложении это откроет экран входа!');
+        }
+
+        function testRegister() {
+            alert('📝 Тест регистрации:\n\nВ реальном приложении это откроет экран регистрации!');
+        }
+    </script>
+</body>
+</html>

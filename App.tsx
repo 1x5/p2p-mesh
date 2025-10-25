@@ -1,20 +1,33 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useEffect } from 'react';
+import { AppNavigator } from './src/navigation/AppNavigator';
+import { EncryptionService } from './src/services/EncryptionService';
+import './src/styles/webFonts'; // Подключение шрифтов для веб
 
 export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
-}
+  useEffect(() => {
+    console.log('🚀 App starting...');
+    
+    // Инициализируем сервис шифрования при запуске приложения
+    const initializeEncryption = async () => {
+      try {
+        console.log('🔐 Initializing encryption service...');
+        const encryptionService = EncryptionService.getInstance();
+        await encryptionService.loadKeys();
+        
+        // Если ключей нет, генерируем новые
+        if (!encryptionService.getPublicKey()) {
+          console.log('🔑 Generating new encryption keys...');
+          await encryptionService.generateKeyPair();
+        }
+        console.log('✅ Encryption service initialized successfully');
+      } catch (error) {
+        console.error('❌ Error initializing encryption:', error);
+      }
+    };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+    initializeEncryption();
+  }, []);
+
+  console.log('📱 App component rendering...');
+  return <AppNavigator />;
+}

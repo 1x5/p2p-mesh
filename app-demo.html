@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>p2p mesh - Secure Messenger</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f7f8fa;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .app-container {
+            width: 100%;
+            max-width: 414px;
+            height: 896px;
+            background: white;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        .screen {
+            display: none;
+            padding: 60px 30px 30px;
+            height: 100%;
+            overflow-y: auto;
+        }
+        
+        .screen.active {
+            display: block;
+        }
+        
+        .welcome-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .logo {
+            width: 154px;
+            height: 184px;
+            background: #d9d9d9;
+            border-radius: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .title {
+            font-family: 'Urbanist', sans-serif;
+            font-weight: 700;
+            font-size: 40px;
+            color: #212121;
+            margin-bottom: 40px;
+        }
+        
+        .button {
+            width: 100%;
+            padding: 18px 20px;
+            border-radius: 95px;
+            border: none;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        
+        .button:hover {
+            opacity: 0.8;
+        }
+        
+        .button-primary {
+            background: #141718;
+            color: white;
+        }
+        
+        .button-secondary {
+            background: #e3e3e3;
+            color: #b1b1b1;
+        }
+        
+        .login-screen, .register-screen {
+            padding-top: 80px;
+        }
+        
+        .back-button {
+            position: absolute;
+            top: 40px;
+            left: 30px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .screen-title {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 38px;
+            color: #323142;
+            margin-bottom: 40px;
+        }
+        
+        .input-field {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #e1e1e1;
+            border-radius: 12.84px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.67);
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: #141718;
+        }
+        
+        .footer-text {
+            text-align: center;
+            margin-top: 50px;
+            font-size: 14px;
+            color: #cbcbcb;
+        }
+        
+        .footer-text a {
+            color: #212121;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        
+        .chats-screen {
+            padding-top: 60px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #dadada;
+        }
+        
+        .header-title {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            font-size: 22px;
+            color: #141718;
+        }
+        
+        .chat-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #dadada;
+            cursor: pointer;
+        }
+        
+        .chat-item:hover {
+            background: #f5f5f5;
+        }
+        
+        .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 25px;
+            background: #e3e3e3;
+            margin-right: 15px;
+        }
+        
+        .chat-info {
+            flex: 1;
+        }
+        
+        .chat-name {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 15px;
+            color: #111827;
+            margin-bottom: 5px;
+        }
+        
+        .last-message {
+            font-family: 'Poppins', sans-serif;
+            font-size: 13.5px;
+            color: rgba(17, 24, 39, 0.5);
+        }
+        
+        .chat-time {
+            font-family: 'Poppins', sans-serif;
+            font-size: 15px;
+            color: rgba(17, 24, 39, 0.5);
+        }
+        
+        .tab-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 87px;
+            background: linear-gradient(to bottom, #fcfcfd, rgba(252, 252, 253, 0.6));
+            border-top: 1px solid #dadada;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+        
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            color: #a3a3a8;
+        }
+        
+        .tab-item.active {
+            color: #163580;
+        }
+        
+        .tab-item.active::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: #163580;
+            border-radius: 50%;
+            margin-top: 5px;
+        }
+        
+        .add-button {
+            background: #141416;
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Welcome Screen -->
+        <div class="screen welcome-screen active" id="welcome-screen">
+            <div class="logo"></div>
+            <h1 class="title">p2p mesh</h1>
+            <button class="button button-primary" onclick="showScreen('login-screen')">Войти</button>
+            <button class="button button-secondary" onclick="showScreen('register-screen')">Зарегистрироваться</button>
+        </div>
+
+        <!-- Login Screen -->
+        <div class="screen login-screen" id="login-screen">
+            <button class="back-button" onclick="showScreen('welcome-screen')">←</button>
+            <h1 class="screen-title">Войти</h1>
+            <input type="email" class="input-field" placeholder="Почта" value="test@example.com">
+            <input type="password" class="input-field" placeholder="Пароль" value="password">
+            <button class="button button-primary" onclick="login()">Войти</button>
+            <div class="footer-text">
+                Создать новый акаунт? <a onclick="showScreen('register-screen')">Создать</a>
+            </div>
+        </div>
+
+        <!-- Register Screen -->
+        <div class="screen register-screen" id="register-screen">
+            <button class="back-button" onclick="showScreen('welcome-screen')">←</button>
+            <h1 class="screen-title">Создать аккаунт</h1>
+            <input type="text" class="input-field" placeholder="Полное имя">
+            <input type="email" class="input-field" placeholder="Почта">
+            <input type="password" class="input-field" placeholder="Пароль">
+            <button class="button button-primary" onclick="register()">Зарегистрироваться</button>
+            <div class="footer-text">
+                Уже есть акаунт? <a onclick="showScreen('login-screen')">Войти</a>
+            </div>
+        </div>
+
+        <!-- Chats Screen -->
+        <div class="screen chats-screen" id="chats-screen">
+            <div class="header">
+                <h1 class="header-title">Чаты</h1>
+                <button style="background: none; border: none; font-size: 24px;">⚙️</button>
+            </div>
+            
+            <div class="chat-item" onclick="showScreen('chat-screen')">
+                <div class="avatar"></div>
+                <div class="chat-info">
+                    <div class="chat-name">Andrew Parker</div>
+                    <div class="last-message">What kind of strategy is better?</div>
+                </div>
+                <div class="chat-time">11/16/19</div>
+            </div>
+            
+            <div class="chat-item">
+                <div class="avatar"></div>
+                <div class="chat-info">
+                    <div class="chat-name">Алек макканли</div>
+                    <div class="last-message">Hi, I just wanna know...</div>
+                </div>
+                <div class="chat-time">10:53</div>
+            </div>
+            
+            <div class="tab-bar">
+                <div class="tab-item active">💬</div>
+                <div class="tab-item">👥</div>
+                <div class="add-button">+</div>
+                <div class="tab-item">⚙️</div>
+                <div class="tab-item">🕐</div>
+            </div>
+        </div>
+
+        <!-- Chat Screen -->
+        <div class="screen" id="chat-screen">
+            <button class="back-button" onclick="showScreen('chats-screen')">←</button>
+            <h1 class="screen-title">Andrew Parker</h1>
+            <div style="padding: 20px; text-align: center; color: #616161;">
+                <p>Чат с Andrew Parker</p>
+                <p>Сообщения зашифрованы 🔐</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showScreen(screenId) {
+            // Скрыть все экраны
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            
+            // Показать выбранный экран
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function login() {
+            const email = document.querySelector('#login-screen input[type="email"]').value;
+            const password = document.querySelector('#login-screen input[type="password"]').value;
+            
+            if (email === 'test@example.com' && password === 'password') {
+                showScreen('chats-screen');
+            } else {
+                alert('Неверный email или пароль!');
+            }
+        }
+
+        function register() {
+            alert('Регистрация успешна! Переходим к чатам...');
+            showScreen('chats-screen');
+        }
+
+        // Логирование для отладки
+        console.log('🚀 p2p mesh приложение запущено!');
+        console.log('🔐 Тестовые данные: test@example.com / password');
+    </script>
+</body>
+</html>
