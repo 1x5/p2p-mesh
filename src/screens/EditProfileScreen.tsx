@@ -13,8 +13,9 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { Button } from '../components/Button';
 import { InputField } from '../components/InputField';
 import { Icon } from '../components/Icon';
-import { Colors, Fonts, FontSizes, Spacing } from '../styles/constants';
+import { Fonts, FontSizes, Spacing } from '../styles/constants';
 import { User } from '../types';
+import { useTheme } from '../contexts/ThemeContext';
 import { DataService } from '../services/DataService';
 import { RootStackParamList } from '../types';
 
@@ -22,6 +23,7 @@ type EditProfileScreenNavigationProp = StackNavigationProp<RootStackParamList, '
 
 export const EditProfileScreen: React.FC = () => {
   const navigation = useNavigation<EditProfileScreenNavigationProp>();
+  const { colors, isDarkMode } = useTheme();
   const [user, setUser] = useState<User | null>(null);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -72,18 +74,18 @@ export const EditProfileScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.white} />
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={colors.background} />
       
       <View style={styles.header}>
         <TouchableOpacity 
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <Icon name="arrow-back" size={24} color={Colors.text} />
+          <Icon name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         
-        <Text style={styles.title}>Редактировать акк</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Редактировать акк</Text>
       </View>
 
       <View style={styles.content}>
@@ -132,8 +134,7 @@ export const EditProfileScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.white,
-  },
+    },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -147,8 +148,7 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.xl,
     fontFamily: Fonts.primary.medium,
     fontWeight: '500',
-    color: Colors.text,
-  },
+    },
   content: {
     flex: 1,
     paddingHorizontal: Spacing['4xl'],

@@ -8,8 +8,10 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
-import { Colors, Fonts, FontSizes, BorderRadius } from '../styles/constants';
+import { Fonts, FontSizes, BorderRadius } from '../styles/constants';
+import { createFormStyles } from '../styles/navigationStyles';
 import { Icon } from './Icon';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface InputFieldProps {
   label: string;
@@ -34,8 +36,12 @@ export const InputField: React.FC<InputFieldProps> = ({
   inputStyle,
   labelStyle,
 }) => {
+  const { colors, isDarkMode } = useTheme();
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  
+  // Используем новые стили из Figma
+  const formStyles = createFormStyles(isDarkMode ? 'dark' : 'light');
 
   const handleTogglePassword = () => {
     setIsPasswordVisible(!isPasswordVisible);
@@ -43,25 +49,33 @@ export const InputField: React.FC<InputFieldProps> = ({
 
   return (
     <View style={[styles.container, style]}>
-      <View style={styles.inputContainer}>
+      <View style={[
+        styles.inputContainer,
+        {
+          backgroundColor: colors.background,
+          borderColor: isFocused ? colors.primary : colors.border,
+        }
+      ]}>
         {icon && (
-                 <Icon
-                   name={icon as any}
-                   size={18}
-                   color={Colors.gray[400]}
-                   style={styles.icon}
-                 />
+          <Icon
+            name={icon as any}
+            size={18}
+            color={colors.gray[400]}
+            style={styles.icon}
+          />
         )}
         <TextInput
           style={[
             styles.input,
-            isFocused && styles.focusedInput,
+            {
+              color: colors.text,
+            },
             inputStyle,
           ]}
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder || label}
-          placeholderTextColor={Colors.gray[400]}
+          placeholderTextColor={colors.gray[400]}
           secureTextEntry={secureTextEntry && !isPasswordVisible}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
@@ -74,7 +88,7 @@ export const InputField: React.FC<InputFieldProps> = ({
             <Icon
               name={isPasswordVisible ? 'eye-off' : 'eye'}
               size={18}
-              color={Colors.gray[400]}
+              color={colors.gray[400]}
             />
           </TouchableOpacity>
         )}
@@ -90,10 +104,8 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.white,
     borderRadius: BorderRadius.base,
     borderWidth: 1,
-    borderColor: Colors.border,
     paddingHorizontal: 16,
     paddingVertical: 12,
     minHeight: 65,
@@ -105,12 +117,8 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: FontSizes.base,
     fontFamily: Fonts.primary.medium,
-    color: Colors.text,
     letterSpacing: -0.28,
     fontWeight: '500',
-  },
-  focusedInput: {
-    borderColor: Colors.primary,
   },
   eyeIcon: {
     padding: 4,

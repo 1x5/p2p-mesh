@@ -10,16 +10,18 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { Colors, Fonts, FontSizes, Spacing } from '../styles/constants';
+import { Fonts, FontSizes, Spacing } from '../styles/constants';
 import { Icon } from '../components/Icon';
 import { Chat, User } from '../types';
 import { DataService } from '../services/DataService';
 import { MainTabParamList } from '../types';
+import { useTheme } from '../contexts/ThemeContext';
 
 type ChatsScreenNavigationProp = BottomTabNavigationProp<MainTabParamList, 'Chats'>;
 
 export const ChatsScreen: React.FC = () => {
   const navigation = useNavigation<ChatsScreenNavigationProp>();
+  const { colors, isDarkMode } = useTheme();
   const [chats, setChats] = useState<Chat[]>([]);
   const dataService = DataService.getInstance();
 
@@ -41,7 +43,7 @@ export const ChatsScreen: React.FC = () => {
     
     return (
       <TouchableOpacity
-        style={styles.chatItem}
+        style={[styles.chatItem, { borderBottomColor: colors.borderLight }]}
         onPress={() => navigation.navigate('Chat', { 
           chatId: item.id, 
           contactName: contact.name 
@@ -49,21 +51,21 @@ export const ChatsScreen: React.FC = () => {
       >
         <View style={styles.chatContent}>
           <View style={styles.chatInfo}>
-            <Text style={styles.contactName}>{contact.name}</Text>
-            <Text style={styles.lastMessage}>
+            <Text style={[styles.contactName, { color: colors.text }]}>{contact.name}</Text>
+            <Text style={[styles.lastMessage, { color: colors.textSecondary }]}>
               {item.lastMessage?.text || 'Нет сообщений'}
             </Text>
           </View>
           <View style={styles.chatMeta}>
-            <Text style={styles.timestamp}>
+            <Text style={[styles.timestamp, { color: colors.textSecondary }]}>
               {item.lastMessage ? 
                 new Date(item.lastMessage.timestamp).toLocaleDateString() : 
                 ''
               }
             </Text>
             {item.unreadCount > 0 && (
-              <View style={styles.unreadBadge}>
-                <Text style={styles.unreadText}>{item.unreadCount}</Text>
+              <View style={[styles.unreadBadge, { backgroundColor: colors.success }]}>
+                <Text style={[styles.unreadText, { color: colors.white }]}>{item.unreadCount}</Text>
               </View>
             )}
           </View>
@@ -73,13 +75,13 @@ export const ChatsScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.white} />
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={colors.background} />
       
       <View style={styles.header}>
-        <Text style={styles.title}>Чаты</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Чаты</Text>
         <TouchableOpacity style={styles.filterButton}>
-          <Icon name="filter" size={24} color={Colors.text} />
+          <Icon name="filter" size={24} color={colors.text} />
         </TouchableOpacity>
       </View>
 
@@ -97,7 +99,6 @@ export const ChatsScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.white,
   },
   header: {
     flexDirection: 'row',
@@ -110,7 +111,6 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.xl,
     fontFamily: Fonts.primary.medium,
     fontWeight: '500',
-    color: Colors.text,
     letterSpacing: 0.66,
   },
   filterButton: {
@@ -125,7 +125,6 @@ const styles = StyleSheet.create({
   chatItem: {
     paddingVertical: Spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.gray[200],
   },
   chatContent: {
     flexDirection: 'row',
@@ -139,13 +138,11 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.base,
     fontFamily: Fonts.primary.semiBold,
     fontWeight: '600',
-    color: Colors.text,
     marginBottom: 4,
   },
   lastMessage: {
     fontSize: FontSizes.sm,
     fontFamily: Fonts.primary.regular,
-    color: Colors.gray[500],
     opacity: 0.5,
   },
   chatMeta: {
@@ -154,12 +151,10 @@ const styles = StyleSheet.create({
   timestamp: {
     fontSize: FontSizes.base,
     fontFamily: Fonts.primary.regular,
-    color: Colors.gray[500],
     opacity: 0.5,
     marginBottom: 4,
   },
   unreadBadge: {
-    backgroundColor: Colors.primary,
     borderRadius: 10,
     minWidth: 20,
     height: 20,
@@ -170,7 +165,6 @@ const styles = StyleSheet.create({
   unreadText: {
     fontSize: FontSizes.xs,
     fontFamily: Fonts.primary.medium,
-    color: Colors.white,
     fontWeight: '500',
   },
 });

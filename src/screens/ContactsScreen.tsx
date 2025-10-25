@@ -10,22 +10,36 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { Colors, Fonts, FontSizes, Spacing } from '../styles/constants';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { Fonts, FontSizes, Spacing } from '../styles/constants';
 import { Icon } from '../components/Icon';
 import { Contact } from '../types';
 import { DataService } from '../services/DataService';
-import { MainTabParamList } from '../types';
+import { MainTabParamList, RootStackParamList } from '../types';
+import { useTheme } from '../contexts/ThemeContext';
 
-type ContactsScreenNavigationProp = BottomTabNavigationProp<MainTabParamList, 'Contacts'>;
+type ContactsScreenNavigationProp = BottomTabNavigationProp<MainTabParamList, 'Contacts'> & 
+  StackNavigationProp<RootStackParamList>;
 
 export const ContactsScreen: React.FC = () => {
   const navigation = useNavigation<ContactsScreenNavigationProp>();
+  const { colors, isDarkMode } = useTheme();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const dataService = DataService.getInstance();
 
   useEffect(() => {
     loadContacts();
   }, []);
+
+  // Обновляем список контактов при возврате на экран
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      console.log('📱 ContactsScreen focused, reloading contacts');
+      loadContacts();
+    });
+
+    return unsubscribe;
+  }, [navigation]);
 
   const loadContacts = async () => {
     try {
@@ -36,6 +50,11 @@ export const ContactsScreen: React.FC = () => {
     }
   };
 
+  const handleAddContact = () => {
+    console.log('➕ Navigating to NewContact screen');
+    navigation.navigate('NewContact');
+  };
+
   const renderContactItem = ({ item }: { item: Contact }) => {
     return (
       <TouchableOpacity
@@ -44,32 +63,32 @@ export const ContactsScreen: React.FC = () => {
       >
         <View style={styles.contactContent}>
           <View style={styles.contactInfo}>
-            <Text style={styles.contactName}>{item.name}</Text>
+            <Text style={[styles.contactName, { color: colors.text }]}>{item.name}</Text>
           </View>
-          <TouchableOpacity style={styles.editButton}>
-            <Icon name="create-outline" size={16} color={Colors.text} />
-          </TouchableOpacity>
         </View>
       </TouchableOpacity>
     );
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.white} />
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={colors.background} />
       
       <View style={styles.header}>
         <TouchableOpacity 
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <Icon name="arrow-back" size={24} color={Colors.text} />
+          <Icon name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         
-        <Text style={styles.title}>Контакты</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Контакты</Text>
         
-        <TouchableOpacity style={styles.addButton}>
-          <Icon name="add" size={24} color={Colors.text} />
+        <TouchableOpacity 
+          style={styles.addButton}
+          onPress={handleAddContact}
+        >
+          <Icon name="add" size={24} color={colors.text} />
         </TouchableOpacity>
       </View>
 
@@ -79,7 +98,7 @@ export const ContactsScreen: React.FC = () => {
         renderItem={renderContactItem}
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        ItemSeparatorComponent={() => <View style={[styles.separator, { backgroundColor: colors.borderLight }]} />}
       />
     </SafeAreaView>
   );
@@ -88,7 +107,6 @@ export const ContactsScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.white,
   },
   header: {
     flexDirection: 'row',
@@ -107,7 +125,6 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.xl,
     fontFamily: Fonts.primary.medium,
     fontWeight: '500',
-    color: Colors.text,
     letterSpacing: 0.66,
   },
   addButton: {
@@ -134,13 +151,8 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.base,
     fontFamily: Fonts.primary.semiBold,
     fontWeight: '600',
-    color: Colors.text,
-  },
-  editButton: {
-    padding: Spacing.sm,
   },
   separator: {
     height: 1,
-    backgroundColor: Colors.gray[200],
   },
 });

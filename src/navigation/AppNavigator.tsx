@@ -2,9 +2,12 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RootStackParamList, MainTabParamList } from '../types';
-import { Colors, Fonts } from '../styles/constants';
+import { Fonts, createTabBarStyles } from '../styles/constants';
 import { Icon } from '../components/Icon';
+import { useTheme } from '../contexts/ThemeContext';
 
 // Screens
 import { WelcomeScreen } from '../screens/WelcomeScreen';
@@ -22,50 +25,65 @@ const Stack = createStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 const MainTabNavigator = () => {
+  const { colors, isDarkMode } = useTheme();
+  const insets = useSafeAreaInsets();
+  
+  // Используем новую систему стилей
+  const tabBarStyles = createTabBarStyles(isDarkMode ? 'dark' : 'light', insets);
+  
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
-                 let iconName: string;
+          let iconName: string;
 
           if (route.name === 'Chats') {
-            iconName = focused ? 'chatbubbles' : 'chatbubbles-outline';
+            iconName = 'chatbubbles-menu';
           } else if (route.name === 'Contacts') {
-            iconName = focused ? 'people' : 'people-outline';
+            iconName = 'people-menu';
           } else if (route.name === 'Settings') {
-            iconName = focused ? 'settings' : 'settings-outline';
+            iconName = 'settings-menu';
           } else {
             iconName = 'help-outline';
           }
 
-                 return <Icon name={iconName as any} size={size} color={color} />;
+          return <Icon name={iconName as any} size={size} color={color} />;
         },
-        tabBarActiveTintColor: Colors.success,
-        tabBarInactiveTintColor: Colors.gray[500],
-        tabBarStyle: {
-          backgroundColor: Colors.white,
-          borderTopColor: Colors.borderLight,
-          borderTopWidth: 1,
-          paddingBottom: 8,
-          paddingTop: 8,
-          height: 87,
-        },
-        tabBarLabelStyle: {
-          fontFamily: Fonts.primary.medium,
-          fontSize: 12,
-        },
+        tabBarActiveTintColor: colors.success,
+        tabBarInactiveTintColor: colors.gray[500],
+        tabBarStyle: tabBarStyles.tabBar,
+        tabBarLabelStyle: tabBarStyles.tabBarLabel,
         headerShown: false,
       })}
     >
-      <Tab.Screen name="Chats" component={ChatsScreen} />
-      <Tab.Screen name="Contacts" component={ContactsScreen} />
-      <Tab.Screen name="Settings" component={SettingsScreen} />
+      <Tab.Screen 
+        name="Chats" 
+        component={ChatsScreen}
+        options={{
+          tabBarLabel: 'Чаты',
+        }}
+      />
+      <Tab.Screen 
+        name="Contacts" 
+        component={ContactsScreen}
+        options={{
+          tabBarLabel: 'Контакты',
+        }}
+      />
+      <Tab.Screen 
+        name="Settings" 
+        component={SettingsScreen}
+        options={{
+          tabBarLabel: 'Настройки',
+        }}
+      />
     </Tab.Navigator>
   );
 };
 
 export const AppNavigator = () => {
   console.log('🧭 AppNavigator initializing...');
+  const { colors, isDarkMode } = useTheme();
   
   return (
     <NavigationContainer>
@@ -73,7 +91,7 @@ export const AppNavigator = () => {
         initialRouteName="Welcome"
         screenOptions={{
           headerShown: false,
-          cardStyle: { backgroundColor: Colors.white },
+          cardStyle: { backgroundColor: colors.background },
         }}
       >
         <Stack.Screen 

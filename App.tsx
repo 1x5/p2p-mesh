@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { EncryptionService } from './src/services/EncryptionService';
+import { ThemeProvider } from './src/contexts/ThemeContext';
 import './src/styles/webFonts'; // Подключение шрифтов для веб
 
 export default function App() {
@@ -29,5 +31,11 @@ export default function App() {
   }, []);
 
   console.log('📱 App component rendering...');
-  return <AppNavigator />;
+  return (
+    <SafeAreaProvider>
+      <ThemeProvider>
+        <AppNavigator />
+      </ThemeProvider>
+    </SafeAreaProvider>
+  );
 }

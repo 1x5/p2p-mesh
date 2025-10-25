@@ -9,14 +9,17 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Button } from '../components/Button';
-import { Colors, Fonts, FontSizes, Spacing } from '../styles/constants';
+import { Logo } from '../components/Logo';
+import { Fonts, FontSizes, Spacing } from '../styles/constants';
 import { RootStackParamList } from '../types';
+import { useTheme } from '../contexts/ThemeContext';
 
 type WelcomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Welcome'>;
 
 export const WelcomeScreen: React.FC = () => {
   console.log('👋 WelcomeScreen rendering...');
   const navigation = useNavigation<WelcomeScreenNavigationProp>();
+  const { isDarkMode, colors } = useTheme();
 
   const handleLoginPress = () => {
     console.log('🔐 Login button pressed');
@@ -29,18 +32,16 @@ export const WelcomeScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.secondary} />
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.secondary }]}>
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={colors.secondary} />
       
       <View style={styles.content}>
-        {/* Logo из Figma */}
+        {/* Логотип из файла logo222.svg */}
         <View style={styles.logoContainer}>
-          <View style={styles.logo}>
-            <Text style={styles.logoText}>P2P</Text>
-          </View>
+          <Logo size={154} />
         </View>
         
-        <Text style={styles.title}>p2p mesh</Text>
+        <Text style={[styles.title, { color: colors.text }]}>p2p mesh</Text>
         
         <View style={styles.buttonContainer}>
           <Button
@@ -65,7 +66,6 @@ export const WelcomeScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.secondary,
   },
   content: {
     flex: 1,
@@ -76,26 +76,10 @@ const styles = StyleSheet.create({
   logoContainer: {
     marginBottom: Spacing['4xl'],
   },
-  logo: {
-    width: 154,
-    height: 184,
-    backgroundColor: Colors.primary,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  logoText: {
-    fontSize: 48,
-    fontFamily: Fonts.primary.bold,
-    fontWeight: '700',
-    color: Colors.white,
-    letterSpacing: 2,
-  },
   title: {
     fontSize: FontSizes['6xl'],
     fontFamily: Fonts.primary.bold,
     fontWeight: '700',
-    color: Colors.text,
     textAlign: 'center',
     marginBottom: Spacing['4xl'],
   },

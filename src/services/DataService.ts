@@ -20,10 +20,13 @@ export class DataService {
 
   // Методы для работы с хранилищем (поддержка веб-версии)
   private async setItem(key: string, value: string): Promise<void> {
+    console.log('💾 DataService.setItem called:', key, 'value length:', value.length);
     if (Platform.OS === 'web') {
       localStorage.setItem(key, value);
+      console.log('🌐 Saved to localStorage:', key);
     } else {
       await SecureStore.setItemAsync(key, value);
+      console.log('📱 Saved to SecureStore:', key);
     }
   }
 
@@ -162,11 +165,15 @@ export class DataService {
 
   async deleteContact(contactId: string): Promise<void> {
     try {
+      console.log('🗑️ DataService.deleteContact called with ID:', contactId);
       const contacts = await this.getContacts();
+      console.log('📋 Current contacts:', contacts.length);
       const filteredContacts = contacts.filter(c => c.id !== contactId);
+      console.log('📋 Filtered contacts:', filteredContacts.length);
       await this.setItem('contacts', JSON.stringify(filteredContacts));
+      console.log('✅ Contact deleted and saved');
     } catch (error) {
-      console.error('Error deleting contact:', error);
+      console.error('❌ Error deleting contact:', error);
       throw error;
     }
   }

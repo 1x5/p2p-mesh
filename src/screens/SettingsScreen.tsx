@@ -11,18 +11,21 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { Colors, Fonts, FontSizes, Spacing } from '../styles/constants';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { Fonts, FontSizes, Spacing } from '../styles/constants';
 import { Icon } from '../components/Icon';
 import { User } from '../types';
 import { DataService } from '../services/DataService';
-import { MainTabParamList } from '../types';
+import { MainTabParamList, RootStackParamList } from '../types';
+import { useTheme } from '../contexts/ThemeContext';
 
-type SettingsScreenNavigationProp = BottomTabNavigationProp<MainTabParamList, 'Settings'>;
+type SettingsScreenNavigationProp = BottomTabNavigationProp<MainTabParamList, 'Settings'> & 
+  StackNavigationProp<RootStackParamList>;
 
 export const SettingsScreen: React.FC = () => {
   const navigation = useNavigation<SettingsScreenNavigationProp>();
+  const { isDarkMode, colors, setTheme } = useTheme();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const dataService = DataService.getInstance();
 
   useEffect(() => {
@@ -37,6 +40,7 @@ export const SettingsScreen: React.FC = () => {
       console.error('Error loading current user:', error);
     }
   };
+
 
   const handleLogout = async () => {
     try {
@@ -61,14 +65,14 @@ export const SettingsScreen: React.FC = () => {
       <TouchableOpacity style={styles.settingItem} onPress={onPress}>
         <View style={styles.settingContent}>
           <View style={styles.settingInfo}>
-            <Icon name={icon as any} size={24} color={Colors.text} style={styles.settingIcon} />
+            <Icon name={icon as any} size={24} color={colors.text} style={styles.settingIcon} />
             <View style={styles.settingText}>
-              <Text style={styles.settingTitle}>{title}</Text>
-              <Text style={styles.settingSubtitle}>{subtitle}</Text>
+              <Text style={[styles.settingTitle, { color: colors.text }]}>{title}</Text>
+              <Text style={[styles.settingSubtitle, { color: colors.textSecondary }]}>{subtitle}</Text>
             </View>
           </View>
           {rightComponent || (
-            <Icon name="chevron-forward" size={20} color={Colors.gray[400]} />
+            <Icon name="chevron-forward" size={20} color={colors.gray[400]} />
           )}
         </View>
       </TouchableOpacity>
@@ -76,11 +80,11 @@ export const SettingsScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.white} />
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={colors.background} />
       
       <View style={styles.header}>
-        <Text style={styles.title}>Настройки</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Настройки</Text>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -98,15 +102,15 @@ export const SettingsScreen: React.FC = () => {
           undefined,
           <Switch
             value={isDarkMode}
-            onValueChange={setIsDarkMode}
-            trackColor={{ false: Colors.gray[300], true: Colors.primary }}
-            thumbColor={Colors.white}
+            onValueChange={setTheme}
+            trackColor={{ false: colors.gray[300], true: colors.primary }}
+            thumbColor={colors.white}
           />
         )}
 
         <View style={styles.logoutContainer}>
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <Text style={styles.logoutText}>Выйти</Text>
+          <TouchableOpacity style={[styles.logoutButton, { backgroundColor: colors.error }]} onPress={handleLogout}>
+            <Text style={[styles.logoutText, { color: colors.white }]}>Выйти</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -117,7 +121,6 @@ export const SettingsScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.white,
   },
   header: {
     paddingHorizontal: Spacing.lg,
@@ -128,7 +131,6 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.xl,
     fontFamily: Fonts.primary.medium,
     fontWeight: '500',
-    color: Colors.text,
   },
   content: {
     flex: 1,
@@ -157,20 +159,17 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.lg,
     fontFamily: Fonts.primary.semiBold,
     fontWeight: '600',
-    color: Colors.text,
     marginBottom: 4,
   },
   settingSubtitle: {
     fontSize: FontSizes.sm,
     fontFamily: Fonts.primary.regular,
-    color: Colors.gray[600],
   },
   logoutContainer: {
     marginTop: Spacing['4xl'],
     marginBottom: Spacing['4xl'],
   },
   logoutButton: {
-    backgroundColor: Colors.error,
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.lg,
     borderRadius: 8,
@@ -179,7 +178,6 @@ const styles = StyleSheet.create({
   logoutText: {
     fontSize: FontSizes.base,
     fontFamily: Fonts.primary.medium,
-    color: Colors.white,
     fontWeight: '500',
   },
 });

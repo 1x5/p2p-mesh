@@ -5,7 +5,7 @@ const { exec } = require('child_process');
 console.log('🔄 Принудительная перезагрузка с очисткой кэша...');
 
 // Открываем браузер с параметрами очистки кэша
-const url = 'http://localhost:8081/?platform=web&v=' + Date.now();
+const url = 'http://localhost:8082/?platform=web&v=' + Date.now();
 
 // Для macOS Safari
 exec(`open -a Safari "${url}"`, (error) => {

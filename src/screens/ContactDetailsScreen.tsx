@@ -7,6 +7,7 @@ import {
   SafeAreaView,
   StatusBar,
   Alert,
+  Platform,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -14,9 +15,10 @@ import { RouteProp } from '@react-navigation/native';
 import { Button } from '../components/Button';
 import { Icon } from '../components/Icon';
 import { InputField } from '../components/InputField';
-import { Colors, Fonts, FontSizes, Spacing } from '../styles/constants';
+import { Fonts, FontSizes, Spacing } from '../styles/constants';
 import { Contact } from '../types';
 import { DataService } from '../services/DataService';
+import { useTheme } from '../contexts/ThemeContext';
 import { RootStackParamList } from '../types';
 
 type ContactDetailsScreenNavigationProp = StackNavigationProp<RootStackParamList, 'ContactDetails'>;
@@ -26,6 +28,7 @@ export const ContactDetailsScreen: React.FC = () => {
   const navigation = useNavigation<ContactDetailsScreenNavigationProp>();
   const route = useRoute<ContactDetailsScreenRouteProp>();
   const { contactId } = route.params;
+  const { colors, isDarkMode } = useTheme();
   const [contact, setContact] = useState<Contact | null>(null);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -75,19 +78,47 @@ export const ContactDetailsScreen: React.FC = () => {
     }
   };
 
+  const handleDelete = async () => {
+    console.log('🗑️ Delete button pressed for contact:', contactId, contact?.name);
+    await performDelete();
+  };
+
+  const performDelete = async () => {
+    console.log('🔥 Confirmed delete for contact:', contactId);
+    setIsLoading(true);
+    try {
+      console.log('🔄 Calling deleteContact...');
+      await dataService.deleteContact(contactId);
+      console.log('✅ Contact deleted successfully');
+      
+      // Просто возвращаемся на страницу контактов без уведомления
+      navigation.goBack();
+    } catch (error) {
+      console.error('❌ Error deleting contact:', error);
+      
+      if (Platform.OS === 'web') {
+        alert('Произошла ошибка при удалении');
+      } else {
+        Alert.alert('Ошибка', 'Произошла ошибка при удалении');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.white} />
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={colors.background} />
       
       <View style={styles.header}>
         <TouchableOpacity 
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <Icon name="arrow-back" size={24} color={Colors.text} />
+          <Icon name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         
-        <Text style={styles.title}>{contact?.name || 'Контакт'}</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{contact?.name || 'Контакт'}</Text>
       </View>
 
       <View style={styles.content}>
@@ -117,6 +148,14 @@ export const ContactDetailsScreen: React.FC = () => {
             disabled={isLoading}
             style={styles.saveButton}
           />
+          
+          <Button
+            title="Удалить"
+            onPress={handleDelete}
+            variant="danger"
+            disabled={isLoading}
+            style={styles.deleteButton}
+          />
         </View>
       </View>
     </SafeAreaView>
@@ -126,7 +165,6 @@ export const ContactDetailsScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.white,
   },
   header: {
     flexDirection: 'row',
@@ -141,7 +179,6 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.xl,
     fontFamily: Fonts.primary.medium,
     fontWeight: '500',
-    color: Colors.text,
   },
   content: {
     flex: 1,
@@ -156,5 +193,8 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     marginTop: Spacing['4xl'],
+  },
+  deleteButton: {
+    marginTop: Spacing.lg,
   },
 });

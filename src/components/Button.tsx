@@ -1,11 +1,13 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
-import { Colors, Fonts, FontSizes, BorderRadius } from '../styles/constants';
+import { Fonts, FontSizes, BorderRadius } from '../styles/constants';
+import { createButtonStyles } from '../styles/navigationStyles';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface ButtonProps {
   title: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary';
+  variant?: 'primary' | 'secondary' | 'danger';
   disabled?: boolean;
   style?: ViewStyle;
   textStyle?: TextStyle;
@@ -19,67 +21,51 @@ export const Button: React.FC<ButtonProps> = ({
   style,
   textStyle,
 }) => {
-  const buttonStyle = [
-    styles.button,
-    variant === 'primary' ? styles.primaryButton : styles.secondaryButton,
-    disabled && styles.disabledButton,
-    style,
-  ];
+  const { colors, isDarkMode } = useTheme();
+  
+  // Используем новые стили из Figma
+  const buttonStyles = createButtonStyles(isDarkMode ? 'dark' : 'light');
 
-  const buttonTextStyle = [
-    styles.buttonText,
-    variant === 'primary' ? styles.primaryText : styles.secondaryText,
-    disabled && styles.disabledText,
-    textStyle,
-  ];
+  const getButtonStyle = () => {
+    switch (variant) {
+      case 'primary':
+        return [buttonStyles.primaryButton, { opacity: disabled ? 0.6 : 1 }];
+      case 'secondary':
+        return [buttonStyles.secondaryButton, { opacity: disabled ? 0.6 : 1 }];
+      case 'danger':
+        return [buttonStyles.dangerButton, { opacity: disabled ? 0.6 : 1 }];
+      default:
+        return [buttonStyles.primaryButton, { opacity: disabled ? 0.6 : 1 }];
+    }
+  };
+
+  const getTextStyle = () => {
+    switch (variant) {
+      case 'primary':
+        return buttonStyles.primaryButtonText;
+      case 'secondary':
+        return buttonStyles.secondaryButtonText;
+      case 'danger':
+        return buttonStyles.dangerButtonText;
+      default:
+        return buttonStyles.primaryButtonText;
+    }
+  };
 
   return (
     <TouchableOpacity
-      style={buttonStyle}
+      style={[getButtonStyle(), disabled && styles.disabled, style]}
       onPress={onPress}
       disabled={disabled}
       activeOpacity={0.8}
     >
-      <Text style={buttonTextStyle}>{title}</Text>
+      <Text style={[getTextStyle(), textStyle]}>{title}</Text>
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
-  button: {
-    borderRadius: 95.45, // Точный радиус из Figma
-    paddingVertical: 18,
-    paddingHorizontal: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 63.36, // Точная высота из Figma
-  },
-  primaryButton: {
-    backgroundColor: Colors.primary,
-  },
-  secondaryButton: {
-    backgroundColor: '#e3e3e3', // Точный цвет из Figma
-  },
-  disabledButton: {
+  disabled: {
     opacity: 0.5,
-  },
-  buttonText: {
-    fontSize: FontSizes['2xl'],
-    fontWeight: '700',
-    textAlign: 'center',
-    fontFamily: Fonts.primary.bold,
-  },
-  primaryText: {
-    color: Colors.white,
-    fontFamily: Fonts.urbanist.bold,
-    letterSpacing: 0.2,
-  },
-  secondaryText: {
-    color: '#b1b1b1', // Точный цвет из Figma
-    fontFamily: Fonts.urbanist.bold,
-    letterSpacing: 0.19,
-  },
-  disabledText: {
-    opacity: 0.7,
   },
 });

@@ -14,9 +14,10 @@ import {
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
-import { Colors, Fonts, FontSizes, Spacing, BorderRadius } from '../styles/constants';
+import { Fonts, FontSizes, Spacing, BorderRadius } from '../styles/constants';
 import { Icon } from '../components/Icon';
 import { Message, User } from '../types';
+import { useTheme } from '../contexts/ThemeContext';
 import { DataService } from '../services/DataService';
 import { EncryptionService } from '../services/EncryptionService';
 import { RootStackParamList } from '../types';
@@ -26,6 +27,7 @@ type ChatScreenRouteProp = RouteProp<RootStackParamList, 'Chat'>;
 
 export const ChatScreen: React.FC = () => {
   const navigation = useNavigation<ChatScreenNavigationProp>();
+  const { colors, isDarkMode } = useTheme();
   const route = useRoute<ChatScreenRouteProp>();
   const { chatId, contactName } = route.params;
   const [messages, setMessages] = useState<Message[]>([]);
@@ -90,16 +92,18 @@ export const ChatScreen: React.FC = () => {
       ]}>
         <View style={[
           styles.messageBubble,
-          isOwnMessage ? styles.ownBubble : styles.otherBubble
+          isOwnMessage ? styles.ownBubble : styles.otherBubble,
+          { backgroundColor: isOwnMessage ? colors.primary : colors.secondary }
         ]}>
           <Text style={[
             styles.messageText,
-            isOwnMessage ? styles.ownText : styles.otherText
+            isOwnMessage ? styles.ownText : styles.otherText,
+            { color: isOwnMessage ? colors.white : colors.text }
           ]}>
             {item.text}
           </Text>
         </View>
-        <Text style={styles.timestamp}>
+        <Text style={[styles.timestamp, { color: colors.textSecondary }]}>
           {new Date(item.timestamp).toLocaleTimeString([], { 
             hour: '2-digit', 
             minute: '2-digit' 
@@ -110,22 +114,24 @@ export const ChatScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.white} />
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={colors.background} />
       
       <View style={styles.header}>
         <TouchableOpacity 
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <Icon name="arrow-back" size={24} color={Colors.text} />
+          <Icon name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         
         <View style={styles.headerInfo}>
-          <Text style={styles.contactName}>{contactName}</Text>
-          <Text style={styles.status}>Online</Text>
+          <Text style={[styles.contactName, { color: colors.text }]}>{contactName}</Text>
+          <Text style={[styles.status, { color: colors.textSecondary }]}>Online</Text>
         </View>
       </View>
+      
+      <View style={[styles.divider, { backgroundColor: colors.borderLight }]} />
 
       <KeyboardAvoidingView 
         style={styles.content}
@@ -140,17 +146,18 @@ export const ChatScreen: React.FC = () => {
         />
         
         <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.textInput}
-            value={newMessage}
-            onChangeText={setNewMessage}
-            placeholder="Написать"
-            placeholderTextColor={Colors.gray[500]}
-            multiline
-          />
-          <TouchableOpacity onPress={sendMessage} style={styles.sendButton}>
-            <Icon name="send" size={24} color={Colors.white} />
-          </TouchableOpacity>
+          <View style={[styles.inputWrapper, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
+            <TextInput
+              style={[styles.textInput, { color: colors.text }]}
+              value={newMessage}
+              onChangeText={setNewMessage}
+              placeholder="Написать"
+              placeholderTextColor={colors.textSecondary}
+            />
+            <TouchableOpacity onPress={sendMessage} style={styles.sendButton}>
+              <Icon name="send" size={24} color={colors.text} />
+            </TouchableOpacity>
+          </View>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -160,15 +167,13 @@ export const ChatScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.white,
-  },
+    },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    height: 54, // Точная высота из Figma
   },
   backButton: {
     marginRight: Spacing.md,
@@ -177,22 +182,28 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contactName: {
-    fontSize: FontSizes['2xl'],
-    fontFamily: Fonts.primary.bold,
+    fontSize: 24, // Точный размер из Figma
+    fontFamily: 'Noto Sans', // Шрифт из Figma
     fontWeight: '700',
-    color: Colors.text,
+    lineHeight: 32.688, // Точная высота строки из Figma
   },
   status: {
-    fontSize: FontSizes.sm,
-    fontFamily: Fonts.primary.medium,
-    color: Colors.gray[600],
+    fontSize: 14, // Точный размер из Figma
+    fontFamily: 'Poppins', // Шрифт из Figma
+    fontWeight: '500',
+    lineHeight: 21, // Точная высота строки из Figma
+  },
+  divider: {
+    height: 1,
+    marginHorizontal: Spacing.lg,
   },
   content: {
     flex: 1,
   },
   messagesContainer: {
     paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.lg, // Больше отступ снизу для правильного позиционирования
   },
   messageContainer: {
     marginBottom: Spacing.md,
@@ -210,54 +221,59 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.base,
   },
   ownBubble: {
-    backgroundColor: Colors.primary,
-  },
+    },
   otherBubble: {
-    backgroundColor: Colors.gray[100],
-  },
+    },
   messageText: {
-    fontSize: FontSizes.sm,
-    fontFamily: Fonts.primary.regular,
-    letterSpacing: 0.28,
+    fontSize: 14, // Точный размер из Figma
+    fontFamily: 'Poppins', // Шрифт из Figma
+    fontWeight: '400',
+    letterSpacing: 0.28, // Точный letterSpacing из Figma
+    lineHeight: 21, // Точная высота строки из Figma
   },
   ownText: {
-    color: Colors.white,
-    opacity: 0.83,
+    opacity: 1, // Убираем дополнительную opacity
   },
   otherText: {
-    color: Colors.text,
-    opacity: 0.83,
+    opacity: 0.83, // Точная opacity из Figma
   },
   timestamp: {
-    fontSize: FontSizes.xs,
-    fontFamily: Fonts.primary.regular,
-    color: Colors.gray[600],
+    fontSize: 12, // Точный размер из Figma
+    fontFamily: 'Noto Sans', // Шрифт из Figma
+    fontWeight: '400',
+    lineHeight: 16.344, // Точная высота строки из Figma
     marginTop: 4,
   },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: Colors.border,
+    // Убираем верхнюю границу - в Figma её нет
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 7, // Точный радиус из Figma
+    height: 48, // Фиксированная высота из Figma
+    paddingHorizontal: 13.96, // Точный padding из Figma
   },
   textInput: {
     flex: 1,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: BorderRadius.sm,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    fontSize: FontSizes.sm,
-    fontFamily: Fonts.primary.regular,
-    color: Colors.text,
-    maxHeight: 100,
+    fontSize: 14, // Точный размер из Figma
+    fontFamily: 'Urbanist', // Шрифт из Figma
+    fontWeight: '400',
+    lineHeight: 22.4, // Точная высота строки из Figma
+    letterSpacing: 0.2, // Точный letterSpacing из Figma
+    backgroundColor: 'transparent', // Прозрачный фон, так как фон у wrapper
+    borderWidth: 0, // Убираем границу, так как она у wrapper
   },
   sendButton: {
-    backgroundColor: Colors.primary,
-    borderRadius: BorderRadius.sm,
-    padding: Spacing.sm,
-    marginLeft: Spacing.sm,
+    backgroundColor: 'transparent', // Убираем черный фон
+    borderRadius: 7, // Тот же радиус что и у поля ввода
+    width: 32.98, // Точная ширина из Figma
+    height: 33.07, // Точная высота из Figma
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8, // Небольшой отступ от текста
   },
 });
